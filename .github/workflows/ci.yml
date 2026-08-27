@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: macOS — resolve remote package and build for iOS Simulator
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve the remote Swift package
+        # This is the load-bearing step. It proves the version-pinned
+        # XCRemoteSwiftPackageReference genuinely resolves from GitHub — not
+        # from a local checkout, and not from whatever `main` happens to be
+        # today. If the tag were wrong or the package malformed, this fails
+        # before a line is compiled.
+        run: xcodebuild -resolvePackageDependencies -project Demo.xcodeproj -scheme Demo
+
+      - name: Build the app against the resolved package
+        # Generic destination on purpose: pinning to a named device ties the job
+        # to whichever simulator runtimes happen to be on that day's runner
+        # image, and they are not guaranteed. A compile check needs no device
+        # to exist.
+        run: |
+          xcodebuild build \
+            -project Demo.xcodeproj \
+            -scheme Demo \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
