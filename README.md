@@ -112,7 +112,10 @@ runs `xcodebuild -resolvePackageDependencies` and then `xcodebuild build` for
 `generic/platform=iOS Simulator`. The first step is the load-bearing one: it proves the version-pinned
 remote package genuinely resolves from GitHub, not from a local checkout and not from whatever `main`
 happens to be. The library's own CI is green too — a cold Linux build and 112 tests with
-`-Xswiftc -warnings-as-errors`, plus a macOS build for a generic Simulator destination.
+`-Xswiftc -warnings-as-errors`, plus a macOS build for a generic Simulator destination — with one
+deliberate exception: the library has a single red run (#6) left in place, where the updated tests
+were committed one commit ahead of the sources they exercise. The next run, same tests against
+those sources, is green. Its README explains it rather than deleting it.
 
 **Not verified: this app has never been launched on a Simulator.** The macOS jobs are compile checks
 against a *generic* Simulator destination. They prove the code builds for the platform; they do not
