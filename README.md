@@ -48,14 +48,16 @@ Four things worth driving from there:
 
 | Do this | Watch |
 |---|---|
-| Set the pickers to `FeatureCheckout → FeatureSearch` | Every remedy flips to **requires policy change**, and a red **"No legal route exists — stop, do not work around it"** appears. That is the signal that ends an agent's turn instead of continuing it. |
+| Set the pickers to `FeatureCheckout → FeatureSearch` | Every remedy flips to one only a human can enact — one **policy change**, one **redesign** — and a red **"No legal route exists — stop, do not work around it"** appears. That is the signal that ends an agent's turn instead of continuing it. |
 | Set them to `FeatureAccount → LegacyProCore` | The denial reports a **lapsed exception** by name and date rather than a bare "forbidden" — somebody approved this edge once and the approval ran out. |
-| Tap **Dirty a manifest**, then re-read the panels | `owners(for:)` stays answerable; the reverse query goes **INDETERMINATE** with the exact path to re-parse. Staleness is per-query, not per-index. |
+| Tap **Dirty a manifest**, then read the **Evidence locality** panel | Three questions about the same module, side by side: `owners(for:)` and `dependencies(of:depth: 1)` stay **answered** (they read one manifest), while `dependents(of:)` goes **indeterminate** with the exact path to re-parse (it reads every manifest, because the file you did not re-parse is exactly where a new dependent appears). Staleness is per-query, not per-index. |
 | Tap **+30 days** | `FeatureSearch → LegacyProCore` stops being legal. Expiry is evaluated at point of use against an injected clock, which is why a button can move it. |
 
-The **`invariants_violated(diff:)`** panel checks a three-edge proposed change before it is written,
-and catches a cycle that neither added edge closes on its own — edges are applied incrementally, so
-"each one is fine individually" is not a defence.
+The **`invariants_violated(diff:)`** panel checks a four-edge proposed change before it is written.
+Two of those edges are `Networking → PersistenceAPI` and `Persistence → Networking`: both are legal,
+and **neither closes a cycle on its own** — but together, with the already-declared
+`PersistenceAPI → Persistence`, they close a three-module loop. Edges are applied incrementally for
+exactly this reason; "each one is fine individually" is not a defence.
 
 The **tool surface** panel shows the budgeting: two essentials plus two situational tools published,
 two names qualified because they collide with the `mcpbridge` stand-in, and two capabilities
@@ -71,12 +73,18 @@ relocated into a rendered `SKILL.md` because their answers do not change between
 A local path would make this repo prove nothing: it would build against whatever is on the machine.
 Branch-tracking is subtler and worse — every clone and every CI run would resolve whatever `main`
 happens to be that day, which is the wrong default for something a reviewer is meant to be able to
-reproduce. The pin means this app builds against exactly
-[v1.0.0](https://github.com/rajatslakhina/architecture-tool-surface-kit/releases/tag/v1.0.0), today
-and in a year.
+reproduce. The pin means this app builds against the
+[1.x line](https://github.com/rajatslakhina/architecture-tool-surface-kit/releases) and can never be
+silently moved across a breaking change.
 
-`Package.resolved` is deliberately **not** git-ignored here. In an application repo it is the only
-thing recording the exact commit a clone resolves.
+**Being precise about how strong that pin is:** `upToNextMajorVersion` resolves the newest 1.x, not
+literally `1.0.0`. As of this writing the newest 1.x is
+[**v1.1.0**](https://github.com/rajatslakhina/architecture-tool-surface-kit/releases/tag/v1.1.0),
+so that — not v1.0.0 — is what a clone resolves today. The file that would record the exact resolved
+commit is `Package.resolved`, and it is **not committed here** — it has not been generated, because
+this project has never been opened in Xcode on a machine that could resolve the dependency (see
+Verification). It is deliberately not in `.gitignore` either: in an application repo it belongs in
+version control, and the first person to open this project should commit the one Xcode writes.
 
 ---
 
@@ -103,7 +111,7 @@ Requires Xcode 16 or later (Swift 6 language mode, iOS 17 deployment target).
 runs `xcodebuild -resolvePackageDependencies` and then `xcodebuild build` for
 `generic/platform=iOS Simulator`. The first step is the load-bearing one: it proves the version-pinned
 remote package genuinely resolves from GitHub, not from a local checkout and not from whatever `main`
-happens to be. The library's own CI is green too — a cold Linux build and 107 tests with
+happens to be. The library's own CI is green too — a cold Linux build and 112 tests with
 `-Xswiftc -warnings-as-errors`, plus a macOS build for a generic Simulator destination.
 
 **Not verified: this app has never been launched on a Simulator.** The macOS jobs are compile checks
@@ -117,10 +125,16 @@ observed. This build ran unattended and Simulator control was refused three time
 "Builds for a Simulator" and "ran on a Simulator" are two different claims and only the first one is
 true here.
 
-**Reviewed.** Both repos were graded by an independent reviewer with no memory of writing them,
-against a strict checklist. Twenty findings came back, two of them blockers; all were fixed before
-release, including six tests in the library that would have passed against a deliberately broken
-implementation.
+**Reviewed twice, by two independent reviewers** with no memory of writing any of it, against a
+strict checklist. Round one returned twenty findings including two blockers; round two, run against
+the fixed and already-pushed code, returned twenty-one more including two further blockers — among
+them a headline README claim that was documented twice and implemented nowhere, and a "truncated
+traversal" flag whose test asserted the opposite of what its name promised. All were fixed. The most
+useful category both rounds is the same one: **tests that would have passed against a deliberately
+broken implementation** — nine of them across the two rounds.
+
+The final fixes in round two were not themselves independently re-reviewed; the gate has a hard
+three-round ceiling and this is the honest place to say where it stopped.
 
 ---
 

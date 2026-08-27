@@ -4,5 +4,8 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 Demo.xcodeproj/project.xcworkspace/xcuserdata/
-# Package.resolved is deliberately NOT ignored: this is an application repo,
-# and it is the only thing pinning the exact library commit a clone resolves.
+# Note: Package.resolved is intentionally NOT listed here. In an application
+# repo it is the file that records the exact library commit a clone resolves,
+# so it belongs in version control — it simply has not been generated yet,
+# because this project has never been opened in Xcode on a machine that could
+# resolve the dependency. See the Verification section of the README.
