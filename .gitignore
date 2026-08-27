@@ -1,0 +1,8 @@
+.DS_Store
+.build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+Demo.xcodeproj/project.xcworkspace/xcuserdata/
+# Package.resolved is deliberately NOT ignored: this is an application repo,
+# and it is the only thing pinning the exact library commit a clone resolves.
